@@ -1,7 +1,7 @@
 # Encryption site
 This is a simple site for encrypting any text data like passwords, credit card info, personal info, crypto keys, etc.
 
-https://bsgrigorov.github.io/text-encrypt/index.html 
+encrypt-decrypt.me
 
 ## Encryption specifics
 
