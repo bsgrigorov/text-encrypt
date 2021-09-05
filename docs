@@ -1,0 +1,33 @@
+OpenSSL uses a salted key derivation algorithm. The salt is a piece of random bytes generated when encrypting, stored in the file header; upon decryption, the salt is retrieved from the header, and the key and IV are re-computed from the provided password and salt.
+
+At the command-line, you can use the -P option (uppercase P) to print the salt, key and IV, and then exit. You can also use the -p (lowercase P) to print the salt, key and IV, and then proceed with the encryption. First try this:
+
+openssl enc -aes-256-cbc -pass pass:MYPASSWORD -P
+If you run this command several times, you will notice each invocation returns different values ! That's because, in the absence of the -d flag, openssl enc does encryption and generates a random salt each time. Since the salt varies, so do the key and IV. Thus, the -P flag is not very useful when encrypting; the -p flag, however, can be used. Let's try again; this time, we have the file foo_clear which we want to encrypt into foo_enc. Let's run this:
+
+openssl enc -aes-256-cbc -pass pass:MYPASSWORD -p -in foo_clear -out foo_enc
+This command will encrypt the file (thus creating foo_enc) and print out something like this:
+
+salt=A68D6E406A087F05
+key=E7C8836AD32C688444E3928F69F046715F8B33AF2E52A6E67A626B586DE8024E
+iv=B9F128D827203729BE52A834CC0890B7
+These values are the salt, key and IV actually used to encrypt the file.
+
+If I want to get them back afterwards, I can use the -P flag in conjunction with the -d flag:
+
+openssl enc -aes-256-cbc -pass pass:MYPASSWORD -d -P -in foo_enc
+which will print the same salt, key and IV as above, every time. How so? That's because this time we are decrypting, so the header of foo_enc is read, and the salt retrieved. For a given salt value, derivation of the password into key and IV is deterministic.
+
+Moreover, this key-and-IV retrieval is fast, even if the file is very long, because the -P flag prevents actual decryption; it reads the header, but stops there.
+
+Alternatively, you can specify the salt value with the -S flag, or de-activate the salt altogether with -nosalt. Unsalted encryption is not recommended at all because it may allow speeding up password cracking with pre-computed tables (the same password always yields the same key and IV). If you provide the salt value, then you become responsible for generating proper salts, i.e. trying to make them as unique as possible (in practice, you have to produce them randomly). It is preferable to let openssl handle that, since there is ample room for silent failures ("silent" meaning "weak and crackable, but the code still works so you do not detect the problem during your tests").
+
+The encryption format used by OpenSSL is non-standard: it is "what OpenSSL does", and if all versions of OpenSSL tend to agree with each other, there is still no reference document which describes this format except OpenSSL source code. The header format is rather simple:
+
+magic value (8 bytes): the bytes 53 61 6c 74 65 64 5f 5f
+salt value (8 bytes)
+Hence a fixed 16-byte header, beginning with the ASCII encoding of the string Salted__, followed by the salt itself. That's all! No indication of the encryption algorithm; you are supposed to track that yourself.
+
+The process by which the password and salt are turned into the key and IV is un-documented, but the source code shows that it calls the OpenSSL-specific EVP_BytesToKey() function, which uses a custom key derivation function (KDF) with some repeated hashing. This is a non-standard and not-well vetted construct (!) which relies on the MD5 hash function of dubious reputation (!!); that function can be changed on the command-line with the undocumented -md flag (!!!); the "iteration count" is set by the enc command to 1 and cannot be changed (!!!!). This means that the first 16 bytes of the key will be equal to MD5(password||salt), and that's it.
+
+This is quite weak! Anybody who knows how to write code on a PC can try to crack such a scheme and will be able to "try" several dozens of millions of potential passwords per second (hundreds of millions will be achievable with a GPU). If you use openssl enc, make sure your password has very high entropy! (i.e. higher than usually recommended; aim for 80 bits, at least). Or, preferably, don't use it at all; instead, go for something more robust (GnuPG, when doing symmetric encryption for a password, uses a stronger KDF with many iterations of the underlying hash function).

@@ -1,0 +1,53 @@
+body {
+    background-color: powderblue;
+}
+h1 {
+    color: blue;
+}
+p {
+    color: red;
+}
+div {
+    margin: auto;
+    width: 50%;
+    text-align: center;
+}
+div.fields {
+    margin: auto;
+    width: 100%;
+    max-width: 300px;
+    border: 1px solid grey;
+    padding: 5px;
+}
+
+input {
+    display: table-cell; 
+    width: calc(100% - 10px);
+    text-align: left;
+}
+input.password {
+    height: 20px;
+}
+
+textarea {
+    display: table-cell; 
+    width: calc(100% - 10px);
+    height: 150px;
+    text-align: left;
+    word-wrap: break-word;
+
+}
+
+button {
+    transition-duration: 0.4s;
+    text-align: center;
+    margin: auto;
+    width: 50%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.button:hover {
+    background-color: #4CAF50; /* Green */
+}
