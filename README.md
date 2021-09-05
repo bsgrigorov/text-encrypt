@@ -1,7 +1,7 @@
 # Encryption site
 This is a simple site for encrypting any text data like passwords, credit card info, personal info, crypto keys, etc.
 
-[encrypt-decrypt.me](https://encrypt-decrypt.me)
+URL: https://encrypt-decrypt.me
 
 ## Encryption specifics
 
