@@ -39,7 +39,7 @@ echo -n "my-text" | openssl aes-256-cbc -a -p -pbkdf2 --pass pass:"my-password"
 ## Decrypt
 Enter cipher text after echo
 ```
-echo "U2FsdGVkX1/ybPS+ooh2sZDbd8mC0toqkvhcXhlpRIw=" | openssl aes-256-cbc -a -p -pbkdf2 --pass pass:"my-password" 
+echo "U2FsdGVkX1/ybPS+ooh2sZDbd8mC0toqkvhcXhlpRIw=" | openssl aes-256-cbc -d -a -p -pbkdf2 --pass pass:"my-password" 
 ```
 
 You can remove --pass flag and get a prompt for the password instead.
