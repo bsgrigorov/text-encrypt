@@ -53,6 +53,8 @@ function toast(msg, type = 'success', duration = 3000) {
 document.getElementById('Encrypt').addEventListener('click', async () => {
   const text = document.getElementById('Text').value;
   const password = document.getElementById('Password').value;
+  if (!password) { toast('Enter a passphrase before encrypting.', 'error', 4000); return; }
+  if (!text) { toast('Enter text to encrypt.', 'error', 4000); return; }
   try {
     document.getElementById('Ciphertext').value = await encrypt(text, password);
     toast('Encrypted');
@@ -64,6 +66,8 @@ document.getElementById('Encrypt').addEventListener('click', async () => {
 document.getElementById('Decrypt').addEventListener('click', async () => {
   const ciphertext = document.getElementById('Ciphertext').value;
   const password = document.getElementById('Password').value;
+  if (!password) { toast('Enter a passphrase before decrypting.', 'error', 4000); return; }
+  if (!ciphertext) { toast('Enter ciphertext to decrypt.', 'error', 4000); return; }
   try {
     document.getElementById('Text').value = await decrypt(ciphertext, password);
     toast('Decrypted');
@@ -116,11 +120,19 @@ async function encrypt(text, password) {
   out.set(salt, 8);
   out.set(new Uint8Array(ciphertext), 16);
 
-  return btoa(String.fromCharCode(...out));
+  // Avoid spread on large typed arrays (stack overflow risk); use a loop instead
+  let binary = '';
+  for (let i = 0; i < out.length; i++) binary += String.fromCharCode(out[i]);
+  return btoa(binary);
 }
 
 async function decrypt(b64, password) {
-  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const bytes = Uint8Array.from(atob(b64.trim()), c => c.charCodeAt(0));
+  // Validate OpenSSL "Salted__" magic header
+  const magic = [0x53,0x61,0x6c,0x74,0x65,0x64,0x5f,0x5f];
+  if (bytes.length < 16 || !magic.every((b, i) => bytes[i] === b)) {
+    throw new Error('Missing Salted__ header');
+  }
   const salt = bytes.slice(8, 16);
   const ciphertext = bytes.slice(16);
 
