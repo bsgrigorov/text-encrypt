@@ -182,7 +182,7 @@ label {
 }
 
 textarea,
-input[type="password"] {
+input[type="password"], input[type="text"] {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);

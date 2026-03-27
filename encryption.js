@@ -5,8 +5,8 @@ document.getElementById('togglePw').addEventListener('click', () => {
   const eyeClosed = document.querySelector('.eye-closed');
   const isHidden = input.type === 'password';
   input.type = isHidden ? 'text' : 'password';
-  eyeOpen.style.display = isHidden ? 'none' : '';
-  eyeClosed.style.display = isHidden ? '' : 'none';
+  eyeOpen.style.display = isHidden ? '' : 'none';
+  eyeClosed.style.display = isHidden ? 'none' : '';
 });
 
 // Copy ciphertext to clipboard
