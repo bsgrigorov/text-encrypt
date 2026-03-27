@@ -1,4 +1,3 @@
-
 // Toggle password visibility
 document.getElementById('togglePw').addEventListener('click', () => {
   const input = document.getElementById('Password');
@@ -27,86 +26,81 @@ document.getElementById('copyBtn').addEventListener('click', () => {
   });
 });
 
-document.getElementById('Encrypt').addEventListener('click', () => {
-  var text = document.getElementById("Text").value;
-  var password = document.getElementById("Password").value;
-  document.getElementById('Ciphertext').value = encrypt(text, password);
+document.getElementById('Encrypt').addEventListener('click', async () => {
+  const text = document.getElementById('Text').value;
+  const password = document.getElementById('Password').value;
+  document.getElementById('Ciphertext').value = await encrypt(text, password);
 });
 
-document.getElementById('Decrypt').addEventListener('click', () => {
-  var ciphertext = document.getElementById("Ciphertext").value;
-  var password = document.getElementById("Password").value;
-  document.getElementById('Text').value = decrypt(ciphertext, password);
+document.getElementById('Decrypt').addEventListener('click', async () => {
+  const ciphertext = document.getElementById('Ciphertext').value;
+  const password = document.getElementById('Password').value;
+  try {
+    document.getElementById('Text').value = await decrypt(ciphertext, password);
+  } catch {
+    document.getElementById('Text').value = '[Decryption failed — wrong passphrase or corrupted ciphertext]';
+  }
 });
-  
-  
 
-// AES 256, CBC, with salt, PBKDF2
-function decrypt(ciphertext, password) {
-  // 1. Separate ciphertext and salt
-  // var encrypted = "U2FsdGVkX18BI0VniavN78vlhR6fryIan0VvUrdIr+YeLkDYhO2xyA+/oVXJj/c35swVVkCqHPh9VdRbNQG6NQ=="
-  // var encrypted = "U2FsdGVkX1+Kz6cxWgtyStTfNbPsv8kQOm0Z2ZYNuY8="
-  var ciphertextWA = CryptoJS.enc.Base64.parse(ciphertext);
-  var prefixWA = CryptoJS.lib.WordArray.create(ciphertextWA.words.slice(0, 8/4));                             // Salted__ prefix
-  var saltWA = CryptoJS.lib.WordArray.create(ciphertextWA.words.slice(8/4, 16/4));                            // 8 bytes salt: 0x0123456789ABCDEF
-  var ciphertextWA = CryptoJS.lib.WordArray.create(ciphertextWA.words.slice(16/4, ciphertextWA.words.length)); // ciphertext        
 
-  console.log()
-  console.log(prefixWA.toString())
-  console.log(saltWA.toString())
-  console.log(ciphertextWA.toString())
+// AES-256-CBC, PBKDF2/SHA-256, 10000 iterations — OpenSSL compatible
+// Format: base64("Salted__" + salt[8] + ciphertext)
 
-  // 2. Determine key and IV using PBKDF2
-  var keyIvWA = CryptoJS.PBKDF2(
-    password,
-    saltWA,
-    {
-        keySize: (32+16)/4,          // key 8 bytes and IV 4 bytes
-        iterations: 10000,
-        hasher: CryptoJS.algo.SHA256
-    }
+async function deriveKeyAndIV(password, salt) {
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
   );
-  var keyWA = CryptoJS.lib.WordArray.create(keyIvWA.words.slice(0, 32/4));
-  var ivWA = CryptoJS.lib.WordArray.create(keyIvWA.words.slice(32/4, (32+16)/4));
-
-  // 3. Decrypt
-  var decryptedWA = CryptoJS.AES.decrypt(
-    {ciphertext: ciphertextWA}, 
-    keyWA, 
-    {iv: ivWA}
+  // Derive 48 bytes: first 32 = AES key, last 16 = IV
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations: 10000, hash: 'SHA-256' },
+    keyMaterial,
+    384
   );
-  var decrypted = decryptedWA.toString(CryptoJS.enc.Utf8)
-  return decrypted
-
+  const key = await crypto.subtle.importKey(
+    'raw',
+    bits.slice(0, 32),
+    { name: 'AES-CBC' },
+    false,
+    ['encrypt', 'decrypt']
+  );
+  return { key, iv: new Uint8Array(bits.slice(32, 48)) };
 }
 
-function encrypt(text, password) {
-  // var prefixWA = CryptoJS.enc.Hex.parse("53616c7465645f5f") // Hex for "Salted__"
-  var prefixWA = CryptoJS.enc.Utf8.parse("Salted__") // Hex is "53616c7465645f5f"
-  var saltWA = CryptoJS.lib.WordArray.random(64 / 8);
+async function encrypt(text, password) {
+  const salt = crypto.getRandomValues(new Uint8Array(8));
+  const { key, iv } = await deriveKeyAndIV(password, salt);
 
-
-  var key = CryptoJS.PBKDF2(
-    password,
-    saltWA,
-    {
-        keySize: (32+16)/4,          // key and IV
-        iterations: 10000,
-        hasher: CryptoJS.algo.SHA256
-    }
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: 'AES-CBC', iv },
+    key,
+    new TextEncoder().encode(text)
   );
-  var keyWA = CryptoJS.lib.WordArray.create(key.words.slice(0, 32/4));
-  var ivWA = CryptoJS.lib.WordArray.create(key.words.slice(32/4, (32+16)/4));
 
-  // Encrypt
-  var ciphertext = CryptoJS.AES.encrypt(text, keyWA, {
-    iv: ivWA,
-    padding: CryptoJS.pad.Pkcs7
-  });
+  // Assemble: "Salted__" (8 bytes) + salt (8 bytes) + ciphertext
+  const out = new Uint8Array(16 + ciphertext.byteLength);
+  out.set(new TextEncoder().encode('Salted__'), 0);
+  out.set(salt, 8);
+  out.set(new Uint8Array(ciphertext), 16);
 
-  var cipherWA = CryptoJS.lib.WordArray.create(ciphertext.ciphertext.words);
-  var opensslCiphertextWA = prefixWA.concat(saltWA).concat(cipherWA)
+  return btoa(String.fromCharCode(...out));
+}
 
-  return opensslCiphertextWA.toString(CryptoJS.enc.Base64)
-} 
-  
+async function decrypt(b64, password) {
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const salt = bytes.slice(8, 16);
+  const ciphertext = bytes.slice(16);
+
+  const { key, iv } = await deriveKeyAndIV(password, salt);
+
+  const plaintext = await crypto.subtle.decrypt(
+    { name: 'AES-CBC', iv },
+    key,
+    ciphertext
+  );
+
+  return new TextDecoder().decode(plaintext);
+}
