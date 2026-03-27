@@ -2,23 +2,11 @@
 <html lang="en">
 
 <head>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js" integrity="sha512-a+SUDuwNzXDvz4XrIcXHuCf089/iJAoN4lmrXJg18XnduKK6YlDHNRalv4yd1N40OKI80tFidF+rqTFKGPoWFQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-MND5VSFMKW"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-MND5VSFMKW');
-  </script>
-
   <meta charset="UTF-8">
   <meta content='width=device-width, initial-scale=1' name='viewport'/>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self'; img-src 'self' data:; font-src 'self'">
   <title>Text Encrypt</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js" integrity="sha512-a+SUDuwNzXDvz4XrIcXHuCf089/iJAoN4lmrXJg18XnduKK6YlDHNRalv4yd1N40OKI80tFidF+rqTFKGPoWFQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <link rel="stylesheet" href="assets/styles.css">
 
@@ -50,7 +38,7 @@
 
       <div class="field-group">
         <label for="Text">Plaintext</label>
-        <textarea id="Text" name="Text" placeholder="Enter text to encrypt, or paste ciphertext to decrypt…" spellcheck="false"></textarea>
+        <textarea id="Text" name="Text" placeholder="Enter text to encrypt, or paste ciphertext to decrypt…" spellcheck="false" autocomplete="off"></textarea>
       </div>
 
       <div class="field-group">
@@ -112,8 +100,6 @@
   </main>
 
   <script src="encryption.js"></script>
-  <!-- google adsense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4243933021225460" crossorigin="anonymous"></script>
 </body>
 
 </html>

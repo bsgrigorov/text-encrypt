@@ -10,8 +10,8 @@
   --text:          #eeeef8;
   --text-muted:    #7070a0;
   --text-label:    #a4a4c8;
-  --font-display:  'Chakra Petch', monospace;
-  --font-mono:     'JetBrains Mono', monospace;
+  --font-display:  'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+  --font-mono:     ui-monospace, 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
   --radius:        14px;
   --radius-sm:     8px;
 }
