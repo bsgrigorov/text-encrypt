@@ -1,4 +1,32 @@
 
+// Toggle password visibility
+document.getElementById('togglePw').addEventListener('click', () => {
+  const input = document.getElementById('Password');
+  const eyeOpen = document.querySelector('.eye-open');
+  const eyeClosed = document.querySelector('.eye-closed');
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  eyeOpen.style.display = isHidden ? 'none' : '';
+  eyeClosed.style.display = isHidden ? '' : 'none';
+});
+
+// Copy ciphertext to clipboard
+document.getElementById('copyBtn').addEventListener('click', () => {
+  const val = document.getElementById('Ciphertext').value;
+  if (!val) return;
+  navigator.clipboard.writeText(val).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.classList.add('copied');
+    btn.querySelector('.copy-icon').style.display = 'none';
+    btn.querySelector('.check-icon').style.display = '';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.querySelector('.copy-icon').style.display = '';
+      btn.querySelector('.check-icon').style.display = 'none';
+    }, 1800);
+  });
+});
+
 document.getElementById('Encrypt').addEventListener('click', () => {
   var text = document.getElementById("Text").value;
   var password = document.getElementById("Password").value;
