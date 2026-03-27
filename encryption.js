@@ -30,10 +30,10 @@ function decrypt(ciphertext, password) {
 
   // 2. Determine key and IV using PBKDF2
   var keyIvWA = CryptoJS.PBKDF2(
-    password, 
-    saltWA, 
+    password,
+    saltWA,
     {
-        keySize: (32+16)/4,          // key 8 bytes and IV 4 bytes 
+        keySize: (32+16)/4,          // key 8 bytes and IV 4 bytes
         iterations: 10000,
         hasher: CryptoJS.algo.SHA256
     }
@@ -59,7 +59,7 @@ function encrypt(text, password) {
 
 
   var key = CryptoJS.PBKDF2(
-    password, 
+    password,
     saltWA,
     {
         keySize: (32+16)/4,          // key and IV
