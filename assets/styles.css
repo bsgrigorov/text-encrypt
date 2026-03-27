@@ -218,6 +218,31 @@ input:focus {
     0 0 18px var(--accent-glow);
 }
 
+/* Undo Chrome/Safari autofill (yellow/white) on passphrase field */
+.input-wrapper input:-webkit-autofill,
+.input-wrapper input:-webkit-autofill:hover {
+  -webkit-text-fill-color: var(--text) !important;
+  caret-color: var(--text);
+  box-shadow: 0 0 0 1000px var(--surface-2) inset !important;
+  border: 1px solid var(--border) !important;
+  transition: background-color 99999s ease-out;
+}
+
+.input-wrapper input:-webkit-autofill:focus,
+.input-wrapper input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text) !important;
+  box-shadow:
+    0 0 0 1000px var(--surface-2) inset,
+    0 0 0 3px var(--accent-dim),
+    0 0 18px var(--accent-glow) !important;
+  border: 1px solid rgba(0, 229, 180, 0.45) !important;
+}
+
+.input-wrapper input:-moz-autofill {
+  background-color: var(--surface-2) !important;
+  color: var(--text) !important;
+}
+
 /* Password wrapper */
 .input-wrapper {
   position: relative;
