@@ -119,6 +119,13 @@ body {
     0 1px 0 rgba(255, 255, 255, 0.025) inset;
 }
 
+.card-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  width: 100%;
+}
+
 /* Header */
 .card-header {
   text-align: center;
