@@ -26,10 +26,39 @@ document.getElementById('copyBtn').addEventListener('click', () => {
   });
 });
 
+const CHECK_ICON = `<svg class="toast-icon" viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const WARN_ICON  = `<svg class="toast-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="16" r="0.8" fill="currentColor"/></svg>`;
+
+let _toastTimer = null;
+let _toastEl = null;
+
+function toast(msg, type = 'success', duration = 3000) {
+  clearTimeout(_toastTimer);
+  if (_toastEl) { _toastEl.remove(); }
+
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `${type === 'success' ? CHECK_ICON : WARN_ICON}${msg}`;
+  document.getElementById('toastContainer').appendChild(el);
+  _toastEl = el;
+
+  const dismiss = () => {
+    el.classList.add('toast-out');
+    el.addEventListener('animationend', () => { if (_toastEl === el) _toastEl = null; el.remove(); }, { once: true });
+  };
+  _toastTimer = setTimeout(dismiss, duration);
+  el.addEventListener('click', () => { clearTimeout(_toastTimer); dismiss(); });
+}
+
 document.getElementById('Encrypt').addEventListener('click', async () => {
   const text = document.getElementById('Text').value;
   const password = document.getElementById('Password').value;
-  document.getElementById('Ciphertext').value = await encrypt(text, password);
+  try {
+    document.getElementById('Ciphertext').value = await encrypt(text, password);
+    toast('Encrypted');
+  } catch {
+    toast('Encryption failed — an unexpected error occurred.', 'error', 5000);
+  }
 });
 
 document.getElementById('Decrypt').addEventListener('click', async () => {
@@ -37,8 +66,9 @@ document.getElementById('Decrypt').addEventListener('click', async () => {
   const password = document.getElementById('Password').value;
   try {
     document.getElementById('Text').value = await decrypt(ciphertext, password);
+    toast('Decrypted');
   } catch {
-    document.getElementById('Text').value = '[Decryption failed — wrong passphrase or corrupted ciphertext]';
+    toast('Wrong passphrase or corrupted ciphertext.', 'error', 5000);
   }
 });
 
